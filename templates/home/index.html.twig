@@ -3,33 +3,36 @@
 {% block title %}Hello HomeController!{% endblock %}
 
 {% block body %}
-    <div class="jumbotron">
-        <h1>Fil d'actualité de photos</h1>
+    <div class="container">
+        <div class="jumbotron">
+            <h1>Fil d'actualité de photos</h1>
+        </div>
+
+        <div id="blockError">
+
+        </div>
+
+        <div id="blockLogin">
+            <input type="text" placeholder="Username" id="usernameConnexion">
+            <input type="password" placeholder="Password" id="passwordConnexion">
+            <a class="btn btn-success" href="#" id="btnConnexion">Se connecter</a>
+            <a class="btn btn-info" href="#" id="btnInscription">S'inscrire</a>
+        </div>
+
+        <div id="blockInscription">
+            <input type="text" placeholder="Username" id="usernameInput" required>
+            <input type="password" placeholder="Password" id="passwordInput" required>
+            <input type="email" placeholder="Email" id="emailInput">
+            <input type="text" placeholder="Nom" id="nomInput">
+            <input type="text" placeholder="Prenom" id="prenomInput">
+            <a href="#" class="btn btn-success" id="btnValideInscription">Valider</a>
+        </div>
+
+        <div id="blockFlickr">
+            <a href="#" class="btn btn-warning" id="btnDeconnexion">Se deconnecter</a>
+        </div>
     </div>
 
-    <div id="blockError">
-
-    </div>
-
-    <div id="blockLogin">
-        <input type="text" placeholder="Username" id="usernameConnexion">
-        <input type="password" placeholder="Password" id="passwordConnexion">
-        <a class="btn btn-success" href="#" id="btnConnexion">Se connecter</a>
-        <a class="btn btn-info" href="#" id="btnInscription">S'inscrire</a>
-    </div>
-
-    <div id="blockInscription">
-        <input type="text" placeholder="Username" id="usernameInput" required>
-        <input type="password" placeholder="Password" id="passwordInput" required>
-        <input type="email" placeholder="Email" id="emailInput">
-        <input type="text" placeholder="Nom" id="nomInput">
-        <input type="text" placeholder="Prenom" id="prenomInput">
-        <a href="#" class="btn btn-success" id="btnValideInscription">Valider</a>
-    </div>
-
-    <div id="blockFlickr">
-        <a href="#" class="btn btn-warning" id="btnDeconnexion">Se deconnecter</a>
-    </div>
 {% endblock %}
 
 
@@ -43,7 +46,9 @@
 
         $.getJSON("http://api.flickr.com/services/feeds/photos_public.gne?tags=besancon&tagmode=any&format=json&jsoncallback=?", function (data) {
             $.each(data.items, function (key, val) {
-                console.log(val.title);
+                $("#blockFlickr").append(
+                    '<div class="row"><div class="card" style="width: 18rem;"> <img src="'+val.media.m+'" class="card-img-top" alt="..."> <div class="card-body"> <h5 class="card-title">'+val.title+'</h5></div> </div></div>'
+                )
             })
         });
 
@@ -52,10 +57,11 @@
             $("#blockError").hide();
             $("#blockFlickr").hide();
 
-            if (localStorage.getItem("connected") === null) {
-                localStorage.setItem("connected", "no");
+            if (sessionStorage.getItem("connected") === null) {
+                sessionStorage.setItem("connected", "no");
                 $("#blockLogin").show();
             }else{
+                console.log('je suis la ');
                 $("#blockLogin").hide();
                 $("#blockFlickr").show();
             }
@@ -108,7 +114,7 @@
 
             $.post("{{ path("Home.login") }}", {username: Username, password:Password, token:token})
                     .done(function (msg) {
-                        localStorage.setItem("connected", "yes");
+                        sessionStorage.setItem("connected", "yes");
                         $("#blockLogin").hide();
                         $("#blockFlickr").show();
                     })
@@ -119,7 +125,8 @@
 
 
         $("#btnDeconnexion").click(function () {
-            localStorage.clear();
+            sessionStorage.clear();
+            console.log(sessionStorage.getItem("connected"));
             location.reload();
         });
     </script>
