@@ -7,9 +7,28 @@
         <h1>Fil d'actualité de photos</h1>
     </div>
 
+    <div id="blockError">
+
+    </div>
+
     <div id="blockLogin">
-        <input type="text" placeholder="Username">
-        <input type="password" placeholder="Password">
+        <input type="text" placeholder="Username" id="usernameConnexion">
+        <input type="password" placeholder="Password" id="passwordConnexion">
+        <a class="btn btn-success" href="#" id="btnConnexion">Se connecter</a>
+        <a class="btn btn-info" href="#" id="btnInscription">S'inscrire</a>
+    </div>
+
+    <div id="blockInscription">
+        <input type="text" placeholder="Username" id="usernameInput" required>
+        <input type="password" placeholder="Password" id="passwordInput" required>
+        <input type="email" placeholder="Email" id="emailInput">
+        <input type="text" placeholder="Nom" id="nomInput">
+        <input type="text" placeholder="Prenom" id="prenomInput">
+        <a href="#" class="btn btn-success" id="btnValideInscription">Valider</a>
+    </div>
+
+    <div id="blockFlickr">
+        <a href="#" class="btn btn-warning" id="btnDeconnexion">Se deconnecter</a>
     </div>
 {% endblock %}
 
@@ -19,12 +38,89 @@
     <script type="text/javascript">
         var token = "";
         $.get( "http://127.0.0.1:8000/getToken", function( data ) {
+            token = data;
+        });
 
-            alert( "Load was performed." );
+        $.getJSON("http://api.flickr.com/services/feeds/photos_public.gne?tags=besancon&tagmode=any&format=json&jsoncallback=?", function (data) {
+            $.each(data.items, function (key, val) {
+                console.log(val.title);
+            })
         });
 
         $(document).ready(function () {
+            $("#blockInscription").hide();
+            $("#blockError").hide();
+            $("#blockFlickr").hide();
+
+            if (localStorage.getItem("connected") === null) {
+                localStorage.setItem("connected", "no");
+                $("#blockLogin").show();
+            }else{
+                $("#blockLogin").hide();
+                $("#blockFlickr").show();
+            }
+        });
+
+        $("#btnInscription").click(function () {
             $("#blockLogin").hide();
-        })
+            $("#blockInscription").show();
+            $("input").val("");
+        });
+
+        $("#btnValideInscription").click(function () {
+            $("#blockError").empty();
+            const Username = $("#usernameInput").val();
+            const Password = $("#passwordInput").val();
+            if (validateInscription(Username, Password).length === 0){
+                $.post("{{ path("Home.register") }}", {username: Username, password:Password, token:token})
+                        .done(function (msg) {
+                            console.log(msg);
+                        })
+                        .fail(function (xhr, status, error) {
+                            $("#blockError").append("<p>Il y a eut une erreur lors de l'inscription</p>").show();
+                        });
+                $("#blockLogin").show();
+                $("#blockInscription").hide();
+            }else{
+                for (let error of validateInscription(Username, Password)) {
+                    $("#blockError").append("<p>"+ error +"</p>").show();
+                }
+
+            }
+        });
+        
+        function validateInscription(username, password) {
+            var errors = [];
+            if (username.length <= 2){
+                errors.push("Votre pseudo est trop court ");
+            }
+            if(password.length <= 8){
+                errors.push("Votre mdp est trop court ");
+            }
+            return errors;
+        }
+
+        $("#btnConnexion").click(function () {
+            $("#blockError").empty();
+
+            var Username = $("#usernameConnexion").val();
+            var Password = $("#passwordConnexion").val();
+
+            $.post("{{ path("Home.login") }}", {username: Username, password:Password, token:token})
+                    .done(function (msg) {
+                        localStorage.setItem("connected", "yes");
+                        $("#blockLogin").hide();
+                        $("#blockFlickr").show();
+                    })
+                    .fail(function (xhr, status, error) {
+                        $("#blockError").append("<p>Mauvais identifiants</p>").show();
+                    });
+        });
+
+
+        $("#btnDeconnexion").click(function () {
+            localStorage.clear();
+            location.reload();
+        });
     </script>
 {% endblock %}
