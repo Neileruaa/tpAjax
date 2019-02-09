@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello HomeController!{% endblock %}
+
+{% block body %}
+    <div class="jumbotron">
+        <h1>Fil d'actualité de photos</h1>
+    </div>
+
+    <div id="blockLogin">
+        <input type="text" placeholder="Username">
+        <input type="password" placeholder="Password">
+    </div>
+{% endblock %}
+
+
+{% block javascripts %}
+    {{ parent() }}
+    <script type="text/javascript">
+        var token = "";
+        $.get( "http://127.0.0.1:8000/getToken", function( data ) {
+
+            alert( "Load was performed." );
+        });
+
+        $(document).ready(function () {
+            $("#blockLogin").hide();
+        })
+    </script>
+{% endblock %}
