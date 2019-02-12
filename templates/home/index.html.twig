@@ -57,8 +57,8 @@
             $("#blockError").hide();
             $("#blockFlickr").hide();
 
-            if (sessionStorage.getItem("connected") === null) {
-                sessionStorage.setItem("connected", "no");
+            if (sessionStorage.getItem("connected") === null || sessionStorage.getItem("connected")==="null") {
+                sessionStorage.setItem("connected", null);
                 $("#blockLogin").show();
             }else{
                 console.log('je suis la ');
